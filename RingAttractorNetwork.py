@@ -26,7 +26,7 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
             name = t + "_" + str(i)
 
             if t == 'driver':
-                G.add_node('in_port' + str(in_port_idx),
+                G.add_node('in_' + str(in_port_idx),
                                **{'class': 'Port',
                                   'name': 'in_' + str(in_port_idx),
                                   'port_type': 'spike',
@@ -49,7 +49,7 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
 
             # Ring attractor neurons are all attached to output
             # ports (which are represented as separate nodes):
-            if t == 'ring':
+            elif t == 'ring':
                 G.add_node(id,
                            **{'class': 'LeakyIAF',
                               'name': name + '_s',
@@ -63,7 +63,7 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
 
                 G.add_node('out_'+str(spk_out_id),
                            **{'class': 'Port',
-                              'name': name + 'port',
+                              'name': 'out_'+str(spk_out_id),
                               'port_type': 'spike',
                               'port_io': 'out',
                               'selector': '/%s/out/spk/%s' % (lpu_name, str(spk_out_id))
@@ -71,15 +71,15 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                 G.add_edge(id, id + '_port')
                 spk_out_id += 1
             
-            if t == 'pos':
-                G.add_node(id + '_port',
+            elif t == 'pos':
+                G.add_node('out_'+str(spk_out_id),
                            **{'class': 'Port',
                               'name': name + 'port',
                               'port_type': 'spike',
                               'port_io': 'out',
                               'selector': '/%s/out/spk/%s' % (lpu_name, str(spk_out_id))
                               })
-                G.add_node('synapse_' + 'in_port' + str(in_port_idx) + '_to_ring_' + str(in_port_idx),
+                G.add_node('synapse_in_' + str(in_port_idx) + '_to_ring_' + str(in_port_idx),
                                **{'class': 'GABABSynapse',
                                   'name': 'in_port' + str(in_port_idx) + '-' + name,
                                   'gmax': 0.003 * 1e-3,
@@ -92,8 +92,8 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                                   'reverse': -95.0,
                                   'circuit': 'local'
                                   })
-                G.add_edge('in_port' + str(in_port_idx),
-                               'synapse_' + 'in_port' + str(in_port_idx) + '_to_' + id)
+                G.add_edge('in_' + str(in_port_idx),
+                               'synapse_in_' + str(in_port_idx) + '_to_' + id)
                     G.add_edge('synapse_' + 'in_port' + str(in_port_idx) + '_to_' + id,
                                id)
                 in_port_idx += 1
