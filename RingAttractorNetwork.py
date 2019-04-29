@@ -88,13 +88,12 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                                   'b2': 0.034,
                                   'n': 4,
                                   'gamma':100.0,
-                                  'reverse': -95.0,
-                                  'circuit': 'local'
+                                  'reverse': -95.0                                  
                                   })
                 G.add_edge('in_' + str(in_port_idx),
                              'synapse_in_' + str(in_port_idx) + '_to_ring_' + str(in_port_idx))
-                    G.add_edge('synapse_in_' + str(in_port_idx) + '_to_ring_' + str(in_port_idx),
-                               'ring_' + str(in_port_idx))
+                G.add_edge('synapse_in_' + str(in_port_idx) + '_to_ring_' + str(in_port_idx),
+                           'ring_' + str(in_port_idx))
                 in_port_idx += 1
 
             elif t == 'rota' or t == 'rotb':
@@ -108,9 +107,11 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                               'resistance': 1002.445570216,
                               'capacitance': 0.0669810502993
                               })
-        # Ring Attractor Connections
+
+    # Defining Connectivities
+    # Ring Attractor Connections
     for i in range(N_ring):
-      # Self Excitation
+        # Self Excitation
         synapse_name = 'Self_Ex_r_'+'_'+str(i)
         G.add_node(synapse_name,
                        **{'class': 'GABABSynapse',
@@ -122,9 +123,10 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                           'b2': 0.034,
                           'n': 4,
                           'gamma':100.0,
-                          'reverse': -95.0,
-                          'circuit': 'local'})
-        G.add_edge('ring_'+str(i),'ring_'+str(i))            
+                          'reverse': -95.0
+                          })
+        G.add_edge('ring_'+str(i),synapse_name)
+        G.add_edge(synapse_name,'ring_'+str(i))           
 
         for j in rem(i+1+range(N_ring-1),N_ring):
           #Inhibitory
@@ -139,9 +141,10 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                               'b2': 0.034,
                               'n': 4,
                               'gamma':100.0,
-                              'reverse': -95.0,
-                              'circuit': 'local'})
-            G.add_edge('ring_'+str(j),'ring_'+str(i))
+                              'reverse': -95.0
+                              })
+            G.add_edge('ring_'+str(j),synapse_name)
+            G.add_edge(synapse_name,'ring_'+str(i))
           # Excitatory
             if abs(j-i)<3:
                 synapse_name = 'Excit_r_'+'_'+str(j)+'_'+str(i)
@@ -156,13 +159,13 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                                   'n': 4,
                                   'gamma':100.0,
                                   'reverse': -95.0,
-                                  'circuit': 'local'})
-                G.add_edge('ring_'+str(j),'ring_'+str(i))
+                                  })
+                G.add_edge('ring_'+str(j),synapse_name)
+                G.add_edge(synapse_name,'ring_'+str(i))
 
     # Clockwise +1 Rotational a
 
     for i in range(N_ring)
-
     # Rota
       # Ring to Rota
         synapse_name = 'ring_'+str(i)+'_rota_'+str(i)
@@ -177,8 +180,9 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                           'n': 4,
                           'gamma':100.0,
                           'reverse': -95.0,
-                          'circuit': 'local'})
-        G.add_edge('ring_'+str(i),'rota_'+str(i)) 
+                          })
+        G.add_edge('ring_'+str(j),synapse_name)
+        G.add_edge(synapse_name,'rota_'+str(i))
 
       # Rota to Ring
         synapse_name = 'rota_'+str(i)+'_ring_'+str(i+1)
@@ -192,9 +196,10 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                           'b2': 0.034,
                           'n': 4,
                           'gamma':100.0,
-                          'reverse': -95.0,
-                          'circuit': 'local'})
-        G.add_edge('rota_'+str(i),'ring_'+str(i+1)) 
+                          'reverse': -95.0
+                          }) 
+        G.add_edge('rota_'+str(j),synapse_name)
+        G.add_edge(synapse_name,'ring_'+str(i+1))
 
         # Driver to Rota
         synapse_name = 'driver_0_rota_'+str(i)
@@ -208,9 +213,10 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                           'b2': 0.034,
                           'n': 4,
                           'gamma':100.0,
-                          'reverse': -95.0,
-                          'circuit': 'local'})
-        G.add_edge('driver_0','rota_'+str(i)) 
+                          'reverse': -95.0
+                          })
+        G.add_edge('driver_0',synapse_name)
+        G.add_edge(synapse_name,'rota_'+str(i))
 
       # Rota to Driver
         synapse_name = 'rota_'+str(i)+'driver_0'
@@ -224,9 +230,11 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                           'b2': 0.034,
                           'n': 4,
                           'gamma':100.0,
-                          'reverse': -95.0,
-                          'circuit': 'local'})
-        G.add_edge('rota_'+str(i),'driver_0')     
+                          'reverse': -95.0
+                          })
+        G.add_edge('rota_'+str(i),'driver_0')
+        G.add_edge('rota_'+str(i),synapse_name)
+        G.add_edge(synapse_name,'driver_0')     
 
     # Rotb
       # Ring to Rotb
@@ -241,12 +249,13 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                           'b2': 0.034,
                           'n': 4,
                           'gamma':100.0,
-                          'reverse': -95.0,
-                          'circuit': 'local'})
-        G.add_edge('ring_'+str(i),'rotb_'+str(i)) 
+                          'reverse': -95.0
+                          })
+        G.add_edge('ring_'+str(j),synapse_name)
+        G.add_edge(synapse_name,'rotb_'+str(i))
 
       # Rotb to Ring
-        synapse_name = 'rotb_'+str(i)+'_ring_'+str(i+1)
+        synapse_name = 'rotb_'+str(i)+'_ring_'+str(i-1)
         G.add_node(synapse_name,
                        **{'class': 'GABABSynapse',
                           'name': synapse_name,
@@ -257,9 +266,10 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                           'b2': 0.034,
                           'n': 4,
                           'gamma':100.0,
-                          'reverse': -95.0,
-                          'circuit': 'local'})
-        G.add_edge('rotb_'+str(i),'ring_'+str(i+1)) 
+                          'reverse': -95.0
+                          })
+        G.add_edge('rotb_'+str(j),synapse_name)
+        G.add_edge(synapse_name,'ring_'+str(i-1))
 
         # Driver to Rotb
         synapse_name = 'driver_1_rotb_'+str(i)
@@ -273,9 +283,10 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                           'b2': 0.034,
                           'n': 4,
                           'gamma':100.0,
-                          'reverse': -95.0,
-                          'circuit': 'local'})
-        G.add_edge('driver_1','rotb_'+str(i)) 
+                          'reverse': -95.0
+                          })
+        G.add_edge('driver_1'+str(j),synapse_name)
+        G.add_edge(synapse_name,'rotb_'+str(i))
 
       # Rota to Driver
         synapse_name = 'rotb_'+str(i)+'driver_1'
@@ -289,9 +300,10 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                           'b2': 0.034,
                           'n': 4,
                           'gamma':100.0,
-                          'reverse': -95.0,
-                          'circuit': 'local'})
-        G.add_edge('rotb_'+str(i),'driver_1')        
+                          'reverse': -95.0
+                          })
+        G.add_edge('rotb_'+str(i),synapse_name)
+        G.add_edge(synapse_name,'driver_1')        
 
     return G
 
