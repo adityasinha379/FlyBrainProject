@@ -30,7 +30,7 @@ def medulla(input,tau):
 def lobulla(input):
     # input shape: (l,b//2,4,t)
     sum_out = np.sum(np.sum(input, axis=0),axis=0)     # (4,t)
-    lob_out = (sum_out[0]-sum_out[1])/(sum_out[2]-sum_out[3]+1e-8) # (1,t)
+    lob_out = (sum_out[0]-sum_out[1])+(sum_out[2]-sum_out[3]+1e-8) # (1,t)
     return sum_out, lob_out
 
 def AVDU(sum_out,lob_out,tau):  # sum_out: (4,t), lob_out: (1,t)
