@@ -18,7 +18,6 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
 
     in_port_idx = 0
     spk_out_id = 0
-    gpot_out_id = 0
 
     for (t, n) in zip(neu_type, neu_num):
         for i in range(n):
@@ -163,9 +162,8 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                 G.add_edge('ring_'+str(j),synapse_name)
                 G.add_edge(synapse_name,'ring_'+str(i))
 
-    # Clockwise +1 Rotational a
-
-    for i in range(N_ring)
+    # Rota-> +1 clockwise, Rotb-> -1 anticlockwise
+    for i in range(N_ring):
     # Rota
       # Ring to Rota
         synapse_name = 'ring_'+str(i)+'_rota_'+str(i)
