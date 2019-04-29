@@ -51,7 +51,7 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
             elif t == 'ring':
                 G.add_node(id,
                            **{'class': 'LeakyIAF',
-                              'name': id + '_s',
+                              'name': id,
                               'initV': np.random.uniform(-60.0, -25.0),
                               'reset_potential': -67.5489770451,
                               'resting_potential': 0.0,
@@ -108,6 +108,190 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                               'resistance': 1002.445570216,
                               'capacitance': 0.0669810502993
                               })
+        # Ring Attractor Connections
+    for i in range(N_ring):
+      # Self Excitation
+        synapse_name = 'Self_Ex_r_'+'_'+str(i)
+        G.add_node(synapse_name,
+                       **{'class': 'GABABSynapse',
+                          'name': synapse_name,
+                          'gmax': 0.003 * 1e-3,
+                          'a1': 0.09,
+                          'a2': 0.18,
+                          'b1': 0.0012,
+                          'b2': 0.034,
+                          'n': 4,
+                          'gamma':100.0,
+                          'reverse': -95.0,
+                          'circuit': 'local'})
+        G.add_edge('ring_'+str(i),'ring_'+str(i))            
+
+        for j in rem(i+1+range(N_ring-1),N_ring):
+          #Inhibitory
+            synapse_name = 'Inhib_r_'+'_'+str(j)+'_'+str(i)
+            G.add_node(synapse_name,
+                           **{'class': 'GABABSynapse',
+                              'name': synapse_name,
+                              'gmax': 0.003 * 1e-3,
+                              'a1': 0.09,
+                              'a2': 0.18,
+                              'b1': 0.0012,
+                              'b2': 0.034,
+                              'n': 4,
+                              'gamma':100.0,
+                              'reverse': -95.0,
+                              'circuit': 'local'})
+            G.add_edge('ring_'+str(j),'ring_'+str(i))
+          # Excitatory
+            if abs(j-i)<3:
+                synapse_name = 'Excit_r_'+'_'+str(j)+'_'+str(i)
+                G.add_node(synapse_name,
+                               **{'class': 'GABABSynapse',
+                                  'name': synapse_name,
+                                  'gmax': 0.003 * 1e-3,
+                                  'a1': 0.09,
+                                  'a2': 0.18,
+                                  'b1': 0.0012,
+                                  'b2': 0.034,
+                                  'n': 4,
+                                  'gamma':100.0,
+                                  'reverse': -95.0,
+                                  'circuit': 'local'})
+                G.add_edge('ring_'+str(j),'ring_'+str(i))
+
+    # Clockwise +1 Rotational a
+
+    for i in range(N_ring)
+
+    # Rota
+      # Ring to Rota
+        synapse_name = 'ring_'+str(i)+'_rota_'+str(i)
+        G.add_node(synapse_name,
+                       **{'class': 'GABABSynapse',
+                          'name': synapse_name,
+                          'gmax': 0.003 * 1e-3,
+                          'a1': 0.09,
+                          'a2': 0.18,
+                          'b1': 0.0012,
+                          'b2': 0.034,
+                          'n': 4,
+                          'gamma':100.0,
+                          'reverse': -95.0,
+                          'circuit': 'local'})
+        G.add_edge('ring_'+str(i),'rota_'+str(i)) 
+
+      # Rota to Ring
+        synapse_name = 'rota_'+str(i)+'_ring_'+str(i+1)
+        G.add_node(synapse_name,
+                       **{'class': 'GABABSynapse',
+                          'name': synapse_name,
+                          'gmax': 0.003 * 1e-3,
+                          'a1': 0.09,
+                          'a2': 0.18,
+                          'b1': 0.0012,
+                          'b2': 0.034,
+                          'n': 4,
+                          'gamma':100.0,
+                          'reverse': -95.0,
+                          'circuit': 'local'})
+        G.add_edge('rota_'+str(i),'ring_'+str(i+1)) 
+
+        # Driver to Rota
+        synapse_name = 'driver_0_rota_'+str(i)
+        G.add_node(synapse_name,
+                       **{'class': 'GABABSynapse',
+                          'name': synapse_name,
+                          'gmax': 0.003 * 1e-3,
+                          'a1': 0.09,
+                          'a2': 0.18,
+                          'b1': 0.0012,
+                          'b2': 0.034,
+                          'n': 4,
+                          'gamma':100.0,
+                          'reverse': -95.0,
+                          'circuit': 'local'})
+        G.add_edge('driver_0','rota_'+str(i)) 
+
+      # Rota to Driver
+        synapse_name = 'rota_'+str(i)+'driver_0'
+        G.add_node(synapse_name,
+                       **{'class': 'GABABSynapse',
+                          'name': synapse_name,
+                          'gmax': 0.003 * 1e-3,
+                          'a1': 0.09,
+                          'a2': 0.18,
+                          'b1': 0.0012,
+                          'b2': 0.034,
+                          'n': 4,
+                          'gamma':100.0,
+                          'reverse': -95.0,
+                          'circuit': 'local'})
+        G.add_edge('rota_'+str(i),'driver_0')     
+
+    # Rotb
+      # Ring to Rotb
+        synapse_name = 'ring_'+str(i)+'_rotb_'+str(i)
+        G.add_node(synapse_name,
+                       **{'class': 'GABABSynapse',
+                          'name': synapse_name,
+                          'gmax': 0.003 * 1e-3,
+                          'a1': 0.09,
+                          'a2': 0.18,
+                          'b1': 0.0012,
+                          'b2': 0.034,
+                          'n': 4,
+                          'gamma':100.0,
+                          'reverse': -95.0,
+                          'circuit': 'local'})
+        G.add_edge('ring_'+str(i),'rotb_'+str(i)) 
+
+      # Rotb to Ring
+        synapse_name = 'rotb_'+str(i)+'_ring_'+str(i+1)
+        G.add_node(synapse_name,
+                       **{'class': 'GABABSynapse',
+                          'name': synapse_name,
+                          'gmax': 0.003 * 1e-3,
+                          'a1': 0.09,
+                          'a2': 0.18,
+                          'b1': 0.0012,
+                          'b2': 0.034,
+                          'n': 4,
+                          'gamma':100.0,
+                          'reverse': -95.0,
+                          'circuit': 'local'})
+        G.add_edge('rotb_'+str(i),'ring_'+str(i+1)) 
+
+        # Driver to Rotb
+        synapse_name = 'driver_1_rotb_'+str(i)
+        G.add_node(synapse_name,
+                       **{'class': 'GABABSynapse',
+                          'name': synapse_name,
+                          'gmax': 0.003 * 1e-3,
+                          'a1': 0.09,
+                          'a2': 0.18,
+                          'b1': 0.0012,
+                          'b2': 0.034,
+                          'n': 4,
+                          'gamma':100.0,
+                          'reverse': -95.0,
+                          'circuit': 'local'})
+        G.add_edge('driver_1','rotb_'+str(i)) 
+
+      # Rota to Driver
+        synapse_name = 'rotb_'+str(i)+'driver_1'
+        G.add_node(synapse_name,
+                       **{'class': 'GABABSynapse',
+                          'name': synapse_name,
+                          'gmax': 0.003 * 1e-3,
+                          'a1': 0.09,
+                          'a2': 0.18,
+                          'b1': 0.0012,
+                          'b2': 0.034,
+                          'n': 4,
+                          'gamma':100.0,
+                          'reverse': -95.0,
+                          'circuit': 'local'})
+        G.add_edge('rotb_'+str(i),'driver_1')        
 
     return G
 
