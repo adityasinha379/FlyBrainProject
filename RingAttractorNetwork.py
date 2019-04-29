@@ -10,8 +10,8 @@ import networkx as nx
 
 def create_lpu_graph(lpu_name, N_ring, N_driver):
     # Set numbers of neurons:
-    neu_type = ('ring', 'pos', 'rot', 'driver')
-    neu_num = (N_ring, N_ring, N_ring, N_driver)
+    neu_type = ('ring', 'pos', 'rota', 'rotb', 'driver')
+    neu_num = (N_ring, N_ring, N_ring, N_ring, N_driver)
 
     # Neuron ids are between 0 and the total number of neurons:
     G = nx.MultiDiGraph()
@@ -23,7 +23,6 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
     for (t, n) in zip(neu_type, neu_num):
         for i in range(n):
             id = t + "_" + str(i)
-            name = t + "_" + str(i)
 
             if t == 'driver':
                 G.add_node('in_' + str(in_port_idx),
@@ -36,7 +35,7 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
 
                 G.add_node(id,
                            **{'class': 'LeakyIAF',
-                              'name': name + '_s',
+                              'name': id + '_s',
                               'initV': np.random.uniform(-60.0, -25.0),
                               'reset_potential': -67.5489770451,
                               'resting_potential': 0.0,
@@ -52,7 +51,7 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
             elif t == 'ring':
                 G.add_node(id,
                            **{'class': 'LeakyIAF',
-                              'name': name + '_s',
+                              'name': id + '_s',
                               'initV': np.random.uniform(-60.0, -25.0),
                               'reset_potential': -67.5489770451,
                               'resting_potential': 0.0,
@@ -72,16 +71,16 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                 spk_out_id += 1
             
             elif t == 'pos':
-                G.add_node('out_'+str(spk_out_id),
-                           **{'class': 'Port',
-                              'name': name + 'port',
-                              'port_type': 'spike',
-                              'port_io': 'out',
-                              'selector': '/%s/out/spk/%s' % (lpu_name, str(spk_out_id))
-                              })
+                G.add_node('in_' + str(in_port_idx),
+                               **{'class': 'Port',
+                                  'name': 'in_' + str(in_port_idx),
+                                  'port_type': 'spike',
+                                  'port_io': 'in',
+                                  'selector': '/%s/in/spk/%s' % (lpu_name, in_port_idx)
+                                  })
                 G.add_node('synapse_in_' + str(in_port_idx) + '_to_ring_' + str(in_port_idx),
                                **{'class': 'GABABSynapse',
-                                  'name': 'in_port' + str(in_port_idx) + '-' + name,
+                                  'name': 'in_' + str(in_port_idx) + '-' + id,
                                   'gmax': 0.003 * 1e-3,
                                   'a1': 0.09,
                                   'a2': 0.18,
@@ -93,114 +92,22 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                                   'circuit': 'local'
                                   })
                 G.add_edge('in_' + str(in_port_idx),
-                               'synapse_in_' + str(in_port_idx) + '_to_' + id)
-                    G.add_edge('synapse_' + 'in_port' + str(in_port_idx) + '_to_' + id,
-                               id)
+                             'synapse_in_' + str(in_port_idx) + '_to_ring_' + str(in_port_idx))
+                    G.add_edge('synapse_in_' + str(in_port_idx) + '_to_ring_' + str(in_port_idx),
+                               'ring_' + str(in_port_idx))
                 in_port_idx += 1
 
-            else:
+            elif t == 'rota' or t == 'rotb':
                 G.add_node(id,
-                           **{'class': "MorrisLecar",
-                              'name': name + '_g',
-                              'V1': 30.,
-                              'V2': 15.,
-                              'V3': 0.,
-                              'V4': 30.,
-                              'phi': 0.025,
-                              'offset': 0.,
-                              'V_L': -50.,
-                              'V_Ca': 100.0,
-                              'V_K': -70.0,
-                              'g_Ca': 1.1,
-                              'g_K': 2.0,
-                              'g_L': 0.5,
-                              'initV': -52.14,
-                              'initn': 0.02,
-                              'circuit': 'proj' if t == 'proj' else 'local'
+                           **{'class': 'LeakyIAF',
+                              'name': id + '_s',
+                              'initV': np.random.uniform(-60.0, -25.0),
+                              'reset_potential': -67.5489770451,
+                              'resting_potential': 0.0,
+                              'threshold': -25.1355161007,
+                              'resistance': 1002.445570216,
+                              'capacitance': 0.0669810502993
                               })
-
-                # Projection neurons are all assumed to be attached to output
-                # ports (which are not represented as separate nodes):
-                if t == 'proj':
-                    G.add_node(id + '_port',
-                               **{'class': 'Port',
-                                  'name': name + 'port',
-                                  'port_type': 'gpot',
-                                  'port_io': 'out',
-                                  'selector': '/%s/out/gpot/%s' % (lpu_name, str(gpot_out_id))
-                                  })
-                    G.add_edge(id, id + '_port')
-                    gpot_out_id += 1
-                else:
-                    G.add_node('in_port' + str(in_port_idx),
-                               **{'class': 'Port',
-                                  'name': 'in_port' + str(in_port_idx),
-                                  'port_type': 'gpot',
-                                  'port_io': 'in',
-                                  'selector': '/%s/in/gpot/%s' % (lpu_name, in_port_idx)
-                                  })
-                    G.add_node('synapse_' + 'in_port' + str(in_port_idx) + '_to_' + id,
-                               **{'class': 'PowerGPotGPot',
-                                  'name': 'in_port' + str(in_port_idx) + '-' + name,
-                                  'reverse': -80.0,
-                                  'saturation': 0.03 * 1e-3,
-                                  'slope': 0.8 * 1e-6,
-                                  'power': 1.0,
-                                  'threshold': -50.0,
-                                  'circuit': 'local'
-                                  })
-                    G.add_edge('in_port' + str(in_port_idx),
-                               'synapse_' + 'in_port' +
-                               str(in_port_idx) + '_to_' + id,
-                               delay=0.001)
-                    G.add_edge('synapse_' + 'in_port' + str(in_port_idx) + '_to_' + id,
-                               id)
-                    in_port_idx += 1
-
-    # Assume a probability of synapse existence for each group of synapses:
-    # sensory -> local, sensory -> projection, local -> projection,
-    # projection -> local:
-    for r, (i, j) in zip((0.5, 0.1, 0.1, 0.3),
-                         ((0, 1), (0, 2), (1, 2), (2, 1))):
-        for src, tar in product(range(neu_num[i]), range(neu_num[j])):
-
-            # Don't connect all neurons:
-            if np.random.rand() > r:
-                continue
-
-            # Connections from the sensory neurons use the alpha function model;
-            # all other connections use the power_gpot_gpot model:
-            pre_id = neu_type[i] + "_" + str(src)
-            post_id = neu_type[j] + "_" + str(tar)
-            name = G.node[pre_id]['name'] + '-' + G.node[post_id]['name']
-            synapse_id = 'synapse_' + name
-            if G.node[pre_id]['class'] is 'LeakyIAF':
-                G.add_node(synapse_id,
-                           **{'class': 'GABABSynapse',
-                              'name': name,
-                              'gmax': 0.003 * 1e-3,
-                              'a1': 0.09,
-                              'a2': 0.18,
-                              'b1': 0.0012,
-                              'b2': 0.034,
-                              'n': 4,
-                              'gamma':100.0,
-                              'reverse': -95.0,
-                              'circuit': 'local'})
-                G.add_edge(pre_id, synapse_id)
-                G.add_edge(synapse_id, post_id)
-            else:
-                G.add_node(synapse_id,
-                           **{'class': 'PowerGPotGPot',
-                              'name': name,
-                              'slope': 0.8 * 1e-6,
-                              'threshold': -50.0,
-                              'power': 1.0,
-                              'saturation': 0.03 * 1e-3,
-                              'reverse': -100.0,
-                              'circuit': 'local'})
-                G.add_edge(pre_id, synapse_id, delay=0.001)
-                G.add_edge(synapse_id, post_id)
 
     return G
 
