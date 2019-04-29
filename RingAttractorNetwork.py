@@ -164,8 +164,8 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
 
     # Rota-> +1 clockwise, Rotb-> -1 anticlockwise
     for i in range(N_ring):
-    # Rota
-      # Ring to Rota
+      # Rota
+        # Ring to Rota
         synapse_name = 'ring_'+str(i)+'_rota_'+str(i)
         G.add_node(synapse_name,
                        **{'class': 'GABABSynapse',
@@ -182,7 +182,7 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
         G.add_edge('ring_'+str(j),synapse_name)
         G.add_edge(synapse_name,'rota_'+str(i))
 
-      # Rota to Ring
+        # Rota to Ring
         synapse_name = 'rota_'+str(i)+'_ring_'+str(i+1)
         G.add_node(synapse_name,
                        **{'class': 'GABABSynapse',
@@ -216,7 +216,7 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
         G.add_edge('driver_0',synapse_name)
         G.add_edge(synapse_name,'rota_'+str(i))
 
-      # Rota to Driver
+        # Rota to Driver
         synapse_name = 'rota_'+str(i)+'driver_0'
         G.add_node(synapse_name,
                        **{'class': 'GABABSynapse',
@@ -234,8 +234,8 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
         G.add_edge('rota_'+str(i),synapse_name)
         G.add_edge(synapse_name,'driver_0')     
 
-    # Rotb
-      # Ring to Rotb
+      # Rotb
+        # Ring to Rotb
         synapse_name = 'ring_'+str(i)+'_rotb_'+str(i)
         G.add_node(synapse_name,
                        **{'class': 'GABABSynapse',
@@ -252,7 +252,7 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
         G.add_edge('ring_'+str(j),synapse_name)
         G.add_edge(synapse_name,'rotb_'+str(i))
 
-      # Rotb to Ring
+        # Rotb to Ring
         synapse_name = 'rotb_'+str(i)+'_ring_'+str(i-1)
         G.add_node(synapse_name,
                        **{'class': 'GABABSynapse',
@@ -286,7 +286,7 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
         G.add_edge('driver_1'+str(j),synapse_name)
         G.add_edge(synapse_name,'rotb_'+str(i))
 
-      # Rota to Driver
+        # Rotb to Driver
         synapse_name = 'rotb_'+str(i)+'driver_1'
         G.add_node(synapse_name,
                        **{'class': 'GABABSynapse',
