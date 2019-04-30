@@ -13,8 +13,7 @@ from neurokernel.LPU.NDComponents.SynapseModels.BaseSynapseModel import BaseSyna
 class Synapse_old(BaseSynapseModel):
     accesses = ['V'] # (bool)
     updates = ['g'] # conductance (mS/cm^2)
-    params = ['weight', # maximum conductance (mS/cm^2)
-              ]
+    params = ['weight']
 
     def __init__(self, params_dict, access_buffers, dt,
                  LPU_id=None, debug=False, cuda_verbose=False):
@@ -69,7 +68,7 @@ class Synapse_old(BaseSynapseModel):
 
             # this is a kernel that runs 1 step internally for each self.dt
         template = """
-__global__ void update(int num_comps, %(dt)s dt, int steps,
+__global__ void update(int num_comps, %(dt)s dt,
                        %(V)s* g_V,
                        %(weight)s* g_weight, %(g)s* g_g)
 {
@@ -83,7 +82,6 @@ __global__ void update(int num_comps, %(dt)s dt, int steps,
     for(int i = tid; i < num_comps; i += total_threads)
     {
         V = g_V[i];
-
 
         weight = g_weight[i];
         g_g[i] = V*weight;
