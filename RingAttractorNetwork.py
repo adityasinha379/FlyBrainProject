@@ -33,14 +33,11 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                                   })
 
                 G.add_node(id,
-                           **{'class': 'LeakyIAF',
+                           **{'class': 'LIN',
                               'name': id + '_s',
                               'initV': np.random.uniform(-60.0, -25.0),
-                              'reset_potential': -67.5489770451,
                               'resting_potential': 0.0,
-                              'threshold': -25.1355161007,
-                              'resistance': 1002.445570216,
-                              'capacitance': 0.0669810502993
+                              'tau': 0.1     # in ms
                               })
                 G.add_edge('in_' + str(in_port_idx), id)
                 in_port_idx += 1
@@ -49,24 +46,21 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
             # ports (which are represented as separate nodes):
             elif t == 'ring':
                 G.add_node(id,
-                           **{'class': 'LeakyIAF',
-                              'name': id,
+                           **{'class': 'LIN',
+                              'name': id + '_s',
                               'initV': np.random.uniform(-60.0, -25.0),
-                              'reset_potential': -67.5489770451,
                               'resting_potential': 0.0,
-                              'threshold': -25.1355161007,
-                              'resistance': 1002.445570216,
-                              'capacitance': 0.0669810502993
+                              'tau': 1
                               })
 
                 G.add_node('out_'+str(spk_out_id),
                            **{'class': 'Port',
                               'name': 'out_'+str(spk_out_id),
-                              'port_type': 'spike',
+                              'port_type': 'gpot',
                               'port_io': 'out',
                               'selector': '/%s/out/spk/%s' % (lpu_name, str(spk_out_id))
                               })
-                G.add_edge(id, id + '_port')
+                G.add_edge(id, 'out_'+str(spk_out_id))
                 spk_out_id += 1
             
             elif t == 'pos':
@@ -78,21 +72,18 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                                   'selector': '/%s/in/spk/%s' % (lpu_name, in_port_idx)
                                   })
                 G.add_node(id,
-                           **{'class': 'LeakyIAF',
-                              'name': id,
+                           **{'class': 'LIN',
+                              'name': id + '_s',
                               'initV': np.random.uniform(-60.0, -25.0),
-                              'reset_potential': -67.5489770451,
                               'resting_potential': 0.0,
-                              'threshold': -25.1355161007,
-                              'resistance': 1002.445570216,
-                              'capacitance': 0.0669810502993
+                              'tau': 10
                               })
                 G.add_edge('in_' + str(in_port_idx), id)
                 synapse_name = id+'->ring_'+str(i)
                 G.add_node(synapse_name,
                                **{'class': 'Synapse',
                                   'name': synapse_name,
-                                  'weight': 0.01,                                 
+                                  'weight': 0.01                                  
                                   })
                 G.add_edge(id,synapse_name)
                 G.add_edge(synapse_name,
@@ -101,14 +92,11 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
 
             elif t == 'rota' or t == 'rotb':
                 G.add_node(id,
-                           **{'class': 'LeakyIAF',
+                           **{'class': 'MultLIN',
                               'name': id + '_s',
                               'initV': np.random.uniform(-60.0, -25.0),
-                              'reset_potential': -67.5489770451,
                               'resting_potential': 0.0,
-                              'threshold': -25.1355161007,
-                              'resistance': 1002.445570216,
-                              'capacitance': 0.0669810502993
+                              'tau': 10
                               })
 
     # Defining Connectivities

@@ -9,7 +9,7 @@ from pycuda.compiler import SourceModule
 
 from BaseAxonHillockModel import BaseAxonHillockModel
 
-class LeakyIAF(BaseAxonHillockModel):
+class LIN(BaseAxonHillockModel):
     updates = [ 'V']
     accesses = ['I']
     params = ['resting_potential','tau']
@@ -90,7 +90,9 @@ __global__ void update(int num_comps, %(dt)s dt, int nsteps,
     %(I)s I;
     %(resting_potential)s resting_potential;
     %(tau)s tau;
-    %(dt)s bh;
+    %(dt)s dt;
+    %(dt)s ddt = dt*1000.;
+    
     for(int i = tid; i < num_comps; i += total_threads)
     {
         V = g_internalV[i];
@@ -98,7 +100,7 @@ __global__ void update(int num_comps, %(dt)s dt, int nsteps,
         resting_potential = g_resting_potential[i];
         tau = g_tau[i];
 
-        V = (-V+I)/tau*dt;
+        V = (-V+I)/tau*ddt;
         
         g_V[i] = V;
         g_internalV[i] = V;

@@ -10,7 +10,7 @@ from pycuda.compiler import SourceModule
 
 from neurokernel.LPU.NDComponents.SynapseModels.BaseSynapseModel import BaseSynapseModel
 
-class Synapse_old(BaseSynapseModel):
+class Synapse(BaseSynapseModel):
     accesses = ['V'] # (bool)
     updates = ['g'] # conductance (mS/cm^2)
     params = ['weight']
