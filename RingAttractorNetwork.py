@@ -92,7 +92,7 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
 
             elif t == 'rota' or t == 'rotb':
                 G.add_node(id,
-                           **{'class': 'MultLIN',
+                           **{'class': 'RotN',
                               'name': id + '_s',
                               'initV': np.random.uniform(-60.0, -25.0),
                               'resting_potential': 0.0,

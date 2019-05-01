@@ -9,11 +9,9 @@ from pycuda.compiler import SourceModule
 
 from BaseAxonHillockModel import BaseAxonHillockModel
 
-class LIN(BaseAxonHillockModel):
-    updates = [ 'V']
-    accesses = ['I']
-    params = ['resting_potential','tau']
-    internals = OrderedDict([('internalV',0.0)])
+class RotN(BaseAxonHillockModel):
+    updates = [ 'I']
+    accesses = ['I1','I2']
 
     def __init__(self, params_dict, access_buffers, dt,
                  debug=False, LPU_id=None, cuda_verbose=False):
@@ -22,7 +20,7 @@ class LIN(BaseAxonHillockModel):
         else:
             self.compile_options = []
 
-        self.num_comps = params_dict['resting_potential'].size
+        self.num_comps = params_dict[self.params[0]].size
         self.params_dict = params_dict
         self.access_buffers = access_buffers
         self.dt = np.double(dt)
