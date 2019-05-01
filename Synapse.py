@@ -27,10 +27,10 @@ class Synapse(BaseSynapseModel):
         self.num_comps = params_dict[self.params[0]].size
         self.dtype = params_dict[self.params[0]].dtype
         self.LPU_id = LPU_id
-
+        self.steps = 1
         self.params_dict = params_dict
         self.access_buffers = access_buffers
-
+        self.ddt = self.dt/self.steps
 
         self.inputs = {
             k: garray.empty(self.num_comps, dtype=self.access_buffers[k].dtype)
@@ -57,7 +57,7 @@ class Synapse(BaseSynapseModel):
 
         self.update_func.prepared_async_call(
             self.update_func.grid, self.update_func.block, st,
-            self.num_comps,
+            self.num_comps,self.ddt*1000, self.nsteps,
             *[self.inputs[k].gpudata for k in self.accesses] +
             [self.params_dict[k].gpudata for k in self.params] +
             [update_pointers[k] for k in self.updates])
@@ -78,12 +78,11 @@ __global__ void update(int num_comps, %(dt)s dt,
     %(V)s V;
     %(weight)s weight;
 
-
     for(int i = tid; i < num_comps; i += total_threads)
     {
         V = g_V[i];
-
         weight = g_weight[i];
+
         g_g[i] = V*weight;
     }
 }
