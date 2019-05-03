@@ -4,3 +4,4 @@ RF receptive fiels with wp = 0.1 for only position
 dt = 0.1ms
 T = 120s
 
+
