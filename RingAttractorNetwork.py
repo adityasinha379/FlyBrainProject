@@ -8,7 +8,7 @@ import h5py
 import networkx as nx
 
 
-def create_lpu_graph(lpu_name, N_ring, N_driver):
+def create_lpu_graph(lpu_name, N_driver, N_ring):
     # Set numbers of neurons:
     neu_type = ('ring', 'pos', 'rota', 'rotb', 'driver')
     neu_num = (N_ring, N_ring, N_ring, N_ring, N_driver)
@@ -17,7 +17,7 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
     G = nx.MultiDiGraph()
 
     in_port_idx = 0
-    spk_out_id = 0
+    gpot_out_id = 0
 
     for (t, n) in zip(neu_type, neu_num):
         for i in range(n):
@@ -29,7 +29,7 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                                   'name': 'in_' + str(in_port_idx),
                                   'port_type': 'gpot',
                                   'port_io': 'in',
-                                  'selector': '/%s/in/spk/%s' % (lpu_name, in_port_idx)
+                                  'selector': '/%s/in/gpot/%s' % (lpu_name, in_port_idx)
                                   })
 
                 G.add_node(id,
@@ -53,15 +53,15 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                               'tau': 1
                               })
 
-                G.add_node('out_'+str(spk_out_id),
+                G.add_node('out_'+str(gpot_out_id),
                            **{'class': 'Port',
-                              'name': 'out_'+str(spk_out_id),
+                              'name': 'out_'+str(gpot_out_id),
                               'port_type': 'gpot',
                               'port_io': 'out',
-                              'selector': '/%s/out/spk/%s' % (lpu_name, str(spk_out_id))
+                              'selector': '/%s/out/gpot/%s' % (lpu_name, str(gpot_out_id))
                               })
-                G.add_edge(id, 'out_'+str(spk_out_id))
-                spk_out_id += 1
+                G.add_edge(id, 'out_'+str(gpot_out_id))
+                gpot_out_id += 1
             
             elif t == 'pos':
                 G.add_node('in_' + str(in_port_idx),
@@ -69,7 +69,7 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
                                   'name': 'in_' + str(in_port_idx),
                                   'port_type': 'gpot',
                                   'port_io': 'in',
-                                  'selector': '/%s/in/spk/%s' % (lpu_name, in_port_idx)
+                                  'selector': '/%s/in/gpot/%s' % (lpu_name, in_port_idx)
                                   })
                 G.add_node(id,
                            **{'class': 'LIN',
@@ -169,65 +169,20 @@ def create_lpu_graph(lpu_name, N_ring, N_driver):
         G.add_edge('ring_'+str(i),synapse_name)
         G.add_edge(synapse_name,'driver_1') 
 '''      
-
     return G
 
 
-def create_lpu(file_name, lpu_name, N_ring, N_driver):
+def create_lpu(file_name, lpu_name, N_driver, N_ring):
     g = create_lpu_graph(lpu_name, N_ring, N_driver)
     nx.write_gexf(g, file_name)
 
 
 
-def create_input(file_name, N_ring, N_driver, dt=1e-4, dur=1.0, start=0.3, stop=0.6, I_max=0.6):
-    """
-    Create input stimulus for sensory neurons in artificial LPU.
-
-    Creates an HDF5 file containing input signals for the specified number of
-    neurons. The signals consist of a rectangular pulse of specified duration
-    and magnitude.
-
-    Parameters
-    ----------
-    file_name : str
-        Name of output HDF5 file.
-    g: networkx.MultiDiGraph
-        NetworkX graph object representing the LPU
-    dt : float
-        Time resolution of generated signal.
-    dur : float
-        Duration of generated signal.
-    start : float
-        Start time of signal pulse.
-    stop : float
-        Stop time of signal pulse.
-    I_max : float
-        Pulse magnitude.
-    """
-
-    Nt = int(dur / dt)
-    t = np.arange(0, dt * Nt, dt)
-
-    uids = ["sensory_" + str(i) for i in range(N_sensory)]
-
-    uids = np.array(uids, dtype = 'S')
-
-    I = np.zeros((Nt, N_sensory), dtype=np.float64)
-    I[np.logical_and(t > start, t < stop)] = I_max
-
-    with h5py.File(file_name, 'w') as f:
-        f.create_dataset('I/uids', data=uids)
-        f.create_dataset('I/data', (Nt, N_sensory),
-                         dtype=np.float64,
-                         data=I)
-
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('lpu_file_name', nargs='?', default='generic_lpu.gexf.gz',
+    parser.add_argument('lpu_file_name', nargs='?', default='RingAttractorNetwork.gexf.gz',
                         help='LPU file name')
-    parser.add_argument('in_file_name', nargs='?', default='generic_input.h5',
-                        help='Input file name')
     parser.add_argument('-s', type=int,
                         help='Seed random number generator')
     parser.add_argument('-l', '--lpu', type=str, default='gen',
@@ -235,16 +190,5 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.s is not None:
-        np.random.seed(args.s)
-    dt = 1e-4
-    dur = 1.0
-    start = 0.3
-    stop = 0.6
-    I_max = 0.6
-    neu_num = [np.random.randint(31, 40) for i in range(3)]
-
     create_lpu(args.lpu_file_name, args.lpu, *neu_num)
     g = nx.read_gexf(args.lpu_file_name)
-    create_input(args.in_file_name, neu_num[0], dt, dur, start, stop, I_max)
-    create_lpu(args.lpu_file_name, args.lpu, *neu_num)
