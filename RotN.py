@@ -58,7 +58,7 @@ class RotN(BaseSynapseModel):
 
         self.update_func.prepared_async_call(
             self.update_func.grid, self.update_func.block, st,
-            self.num_comps, self.ddt*1000, self.nsteps,
+            self.num_comps, self.ddt*1000, self.steps,
             *[self.inputs[k].gpudata for k in self.accesses] +
             [self.params_dict[k].gpudata for k in self.params] +
             [update_pointers[k] for k in self.updates])
