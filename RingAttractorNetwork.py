@@ -173,7 +173,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
 
 
 def create_lpu(file_name, lpu_name, N_driver, N_ring):
-    g = create_lpu_graph(lpu_name, N_ring, N_driver)
+    g = create_lpu_graph(lpu_name, N_driver, N_ring)
     nx.write_gexf(g, file_name)
 
 
@@ -189,6 +189,8 @@ if __name__ == '__main__':
                         help='LPU name')
 
     args = parser.parse_args()
+
+    neu_num = [2,16]
 
     create_lpu(args.lpu_file_name, args.lpu, *neu_num)
     g = nx.read_gexf(args.lpu_file_name)

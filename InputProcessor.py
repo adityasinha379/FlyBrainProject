@@ -66,4 +66,4 @@ def process_input(angular_velocity = 1000):
     pos_out = np.zeros((16,len(t)))
     for i in range(0,l,l//16):
         pos_out[int(i/l*16),:] = np.sum(input[i:i+l//16,:],axis=0)
-    return  t,pos_out, avdu_out
+    return  t,pos_out, avdu_out/1e5*16
