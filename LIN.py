@@ -7,7 +7,7 @@ from pycuda.tools import dtype_to_ctype
 import pycuda.driver as cuda
 from pycuda.compiler import SourceModule
 
-from BaseAxonHillockModel import BaseAxonHillockModel
+from neurokernel.LPU.NDComponents.AxonHillockModels.BaseAxonHillockModel import BaseAxonHillockModel
 
 class LIN(BaseAxonHillockModel):
     updates = [ 'V']
@@ -48,7 +48,7 @@ class LIN(BaseAxonHillockModel):
         self.update_func = self.get_update_func(dtypes)
 
     def pre_run(self, update_pointers):
-        if self.params_dict.has_key('initV'):
+        if 'initV' in self.params_dict:
             cuda.memcpy_dtod(int(update_pointers['V']),
                              self.params_dict['initV'].gpudata,
                              self.params_dict['initV'].nbytes)
