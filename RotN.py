@@ -157,13 +157,12 @@ if __name__ == '__main__':
 
     comp_dict, conns = LPU.graph_to_dicts(G)
 
-    fl_input_processor_1 = StepInputProcessor('V1', ['synapse0'], 6.0, 0.1, 0.9)
-    fl_input_processor_2 = StepInputProcessor('V2', ['synapse0'], 2.0, 0.2, 0.8)
+    fl_input_processor = FileInputProcessor('./test.h5')
     fl_output_processor = FileOutputProcessor(
         [('g', None)], 'new_output.h5', sample_interval=1)
 
     man.add(LPU, 'syn', dt, comp_dict, conns,
-            device=args.gpu_dev, input_processors=[fl_input_processor_1,fl_input_processor_2],
+            device=args.gpu_dev, input_processors=[fl_input_processor],
             output_processors=[fl_output_processor], debug=args.debug)
 
     man.spawn()
