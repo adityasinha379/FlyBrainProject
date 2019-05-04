@@ -24,9 +24,12 @@ neu_out = sorted([k for k, n in G.node.items() if \
                    n['name'][:4] == 'ring' and \
                    n['class'] == 'LIN'])
 
+N_driver = 2
+N_ring = 16
+
 in_uid = ["driver_" + str(i) for i in range(N_driver)]
 in_uid.extend(["ring_" + str(i) for i in range(N_ring)])
-
+print(in_uid[:2])
 
 V = vis.visualizer()
 V.add_LPU('./input.h5', LPU='RingAttractorIn', is_input=True)

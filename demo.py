@@ -42,7 +42,7 @@ logger = setup_logger(file_name=file_name, screen=screen)
 
 man = core.Manager()
 
-(comp_dict, conns) = LPU.lpu_parser('./RingAttractorNetwork.gz')
+(comp_dict, conns) = LPU.lpu_parser('./RingAttractorNetwork.gexf.gz')
 
 fl_input_processor = FileInputProcessor('./input.h5')
 fl_output_processor = FileOutputProcessor([('V',None)], 'output.h5', sample_interval=1)

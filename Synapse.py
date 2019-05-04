@@ -26,10 +26,10 @@ class Synapse(BaseSynapseModel):
         self.num_comps = params_dict[self.params[0]].size
         self.dtype = params_dict[self.params[0]].dtype
         self.LPU_id = LPU_id
-        self.steps = 1
+        self.nsteps = 1
         self.params_dict = params_dict
         self.access_buffers = access_buffers
-        self.ddt = self.dt/self.steps
+        self.ddt = self.dt/self.nsteps
 
         self.inputs = {
             k: garray.empty(self.num_comps, dtype=self.access_buffers[k].dtype)
@@ -56,7 +56,7 @@ class Synapse(BaseSynapseModel):
 
         self.update_func.prepared_async_call(
             self.update_func.grid, self.update_func.block, st,
-            self.num_comps,self.ddt*1000, self.steps,
+            self.num_comps, self.ddt*1000, self.nsteps,
             *[self.inputs[k].gpudata for k in self.accesses] +
             [self.params_dict[k].gpudata for k in self.params] +
             [update_pointers[k] for k in self.updates])
@@ -67,7 +67,7 @@ class Synapse(BaseSynapseModel):
 
             # this is a kernel that runs 1 step internally for each self.dt
         template = """
-__global__ void update(int num_comps, %(dt)s dt,
+__global__ void update(int num_comps, %(dt)s dt, int steps,
                        %(V)s* g_V,
                        %(weight)s* g_weight, %(g)s* g_g)
 {
@@ -101,3 +101,67 @@ __global__ void update(int num_comps, %(dt)s dt,
         func.grid = (min(6 * cuda.Context.get_device().MULTIPROCESSOR_COUNT,
                          (self.num_comps - 1) // 256 + 1), 1)
         return func
+
+# testing function
+if __name__ == '__main__':
+    import argparse
+    import itertools
+
+    import networkx as nx
+    import h5py
+
+    from neurokernel.tools.logging import setup_logger
+    import neurokernel.core_gpu as core
+    from neurokernel.LPU.LPU import LPU
+    from neurokernel.LPU.InputProcessors.StepInputProcessor import StepInputProcessor
+    from neurokernel.LPU.InputProcessors.FileInputProcessor import FileInputProcessor
+    from neurokernel.LPU.OutputProcessors.FileOutputProcessor import FileOutputProcessor
+    import neurokernel.mpi_relaunch
+
+    dt = 1e-4
+    dur = 1.0
+    steps = int(dur / dt)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--debug', default=False,
+                        dest='debug', action='store_true',
+                        help='Write connectivity structures and inter-LPU routed data in debug folder')
+    parser.add_argument('-l', '--log', default='none', type=str,
+                        help='Log output to screen [file, screen, both, or none; default:none]')
+    parser.add_argument('-s', '--steps', default=steps, type=int,
+                        help='Number of steps [default: %s]' % steps)
+    parser.add_argument('-g', '--gpu_dev', default=0, type=int,
+                        help='GPU device number [default: 0]')
+    args = parser.parse_args()
+
+    file_name = None
+    screen = False
+    if args.log.lower() in ['file', 'both']:
+        file_name = 'neurokernel.log'
+    if args.log.lower() in ['screen', 'both']:
+        screen = True
+    logger = setup_logger(file_name=file_name, screen=screen)
+
+    man = core.Manager()
+
+    G = nx.MultiDiGraph()
+
+    G.add_node('synapse0', **{
+               'class': 'Synapse',
+               'name': 'Synapse',
+               'weight': 0.5
+               })
+
+    comp_dict, conns = LPU.graph_to_dicts(G)
+
+    fl_input_processor = StepInputProcessor('V', ['synapse0'], 10.0, 0.2, 0.8)
+    fl_output_processor = FileOutputProcessor(
+        [('g', None)], 'new_output.h5', sample_interval=1)
+
+    man.add(LPU, 'syn', dt, comp_dict, conns,
+            device=args.gpu_dev, input_processors=[fl_input_processor],
+            output_processors=[fl_output_processor], debug=args.debug)
+
+    man.spawn()
+    man.start(steps=args.steps)
+    man.wait()
