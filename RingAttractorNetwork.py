@@ -50,7 +50,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                               'name': id + '_s',
                               'initV': np.random.uniform(-60.0, -25.0),
                               'resting_potential': 0.0,
-                              'tau': 1
+                              'tau': 1.
                               })
 
                 G.add_node('out_'+str(gpot_out_id),
@@ -76,7 +76,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                               'name': id + '_s',
                               'initV': np.random.uniform(-60.0, -25.0),
                               'resting_potential': 0.0,
-                              'tau': 10
+                              'tau': 10.
                               })
                 G.add_edge('in_' + str(in_port_idx), id)
                 synapse_name = id+'->ring_'+str(i)
@@ -95,7 +95,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                 G.add_node(id,
                            **{'class': 'RotN',
                               'name': id + '_s',
-                              'weight': 1
+                              'weight': 1.
                               })
                 G.add_edge('ring_'+str(i),id)
                 G.add_edge('driver_0',id)               
@@ -104,7 +104,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                 G.add_node(id,
                            **{'class': 'RotN',
                               'name': id + '_s',
-                              'weight': 1
+                              'weight': 1.
                               })
                 G.add_edge('ring_'+str(i),id)
                 G.add_edge('driver_1',id)
@@ -122,7 +122,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
         G.add_edge('ring_'+str(i),synapse_name)
         G.add_edge(synapse_name,'ring_'+str(i))           
 
-        for j in rem(i+1+range(N_ring-1),N_ring):
+        for j in (i+1+np.arange(N_ring-1))%N_ring:
           #Inhibitory
             synapse_name = 'Inh_r_'+str(j)+'->'+str(i)
             G.add_node(synapse_name,
@@ -144,31 +144,11 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                 G.add_edge(synapse_name,'ring_'+str(i))
 
         # Rota to Ring
-        G.add_edge('rota_'+str(i),'ring_'+str(rem(i+1,N_ring)))
+        G.add_edge('rota_'+str(i),'ring_'+str((i+1)%N_ring))
 
         # Rotb to Ring
-        G.add_edge('rotb_'+str(i),'ring_'+str(rem(i-1,N_ring)))
-'''
-        # Ring to Driver a
-        synapse_name = 'ring_'+str(i)+'->driver_0'
-        G.add_node(synapse_name,
-                       **{'class': 'Synapse',
-                          'name': synapse_name,
-                          'weight': -0.1
-                          })
-        G.add_edge('ring_'+str(i),synapse_name)
-        G.add_edge(synapse_name,'driver_0')     
+        G.add_edge('rotb_'+str(i),'ring_'+str((i-1)%N_ring))
 
-        # Ring to Driver b
-        synapse_name = 'ring_'+str(i)+'->driver_1'///
-        G.add_node(synapse_name,
-                       **{'class': 'Synapse',
-                          'name': synapse_name,
-                          'weight': -0.1
-                          })
-        G.add_edge('ring_'+str(i),synapse_name)
-        G.add_edge(synapse_name,'driver_1') 
-'''      
     return G
 
 
