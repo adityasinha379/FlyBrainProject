@@ -76,7 +76,7 @@ __global__ void update(int num_comps, %(dt)s dt, int steps,
     int total_threads = gridDim.x * blockDim.x;
 
     %(V)s V;
-    %(V1)s V1;
+    %(Vd)s Vd;
     %(weight)s weight;
 
     for(int i = tid; i < num_comps; i += total_threads)
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     import neurokernel.mpi_relaunch
 
     dt = 1e-4
-    dur = 1.0
+    dur = 1e-2
     steps = int(dur / dt)
 
     parser = argparse.ArgumentParser()
@@ -150,8 +150,8 @@ if __name__ == '__main__':
     G = nx.MultiDiGraph()
 
     G.add_node('synapse0', **{
-               'class': 'Synapse',
-               'name': 'Synapse',
+               'class': 'RotN',
+               'name': 'RotN',
                'weight': 1.
                })
 
