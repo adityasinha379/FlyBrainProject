@@ -14,7 +14,7 @@ from neurokernel.LPU.NDComponents.AxonHillockModels.DrN import DrN
 
 class RotN(BaseSynapseModel):
     accesses = ['V','Vd'] # LIN input and driver input
-    updates = ['g'] # conductance (mS/cm^2)
+    updates = ['I'] # conductance (mS/cm^2)
     params = ['weight']
 
     def __init__(self, params_dict, access_buffers, dt,
@@ -72,7 +72,7 @@ class RotN(BaseSynapseModel):
         template = """
 __global__ void update(int num_comps, %(dt)s dt, int steps,
                        %(V)s* g_V, %(Vd)s* g_Vd,
-                       %(weight)s* g_weight, %(g)s* g_g)
+                       %(weight)s* g_weight, %(I)s* g_I)
 {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     int total_threads = gridDim.x * blockDim.x;
@@ -87,7 +87,7 @@ __global__ void update(int num_comps, %(dt)s dt, int steps,
         Vd = g_Vd[i];
         weight = g_weight[i];
 
-        g_g[i] = V*Vd*weight;
+        g_I[i] = V*Vd*weight;
     }
 }
 """
@@ -180,7 +180,7 @@ if __name__ == '__main__':
     fl_input_processor = FileInputProcessor('./test.h5')
 
     fl_output_processor = FileOutputProcessor(
-        [('g', None)], 'new_output.h5', sample_interval=1)
+        [('I', None)], 'new_output.h5', sample_interval=1)
 
     man.add(LPU, 'syn', dt, comp_dict, conns,
             device=args.gpu_dev, input_processors=[fl_input_processor],
@@ -199,7 +199,7 @@ if __name__ == '__main__':
     t = np.arange(0, args.steps)*dt
 
     plt.figure()
-    plt.plot(t,list(f['g'].values())[0])
+    plt.plot(t,list(f['I'].values())[0])
     plt.xlabel('time [s]')
     plt.ylabel('Voltage [mV]')
     plt.title('Rotational Neuron')

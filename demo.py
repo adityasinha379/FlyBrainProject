@@ -44,7 +44,7 @@ man = core.Manager()
 (comp_dict, conns) = LPU.lpu_parser('./RingAttractorNetwork.gexf.gz')
 
 fl_input_processor = FileInputProcessor('./input.h5')
-fl_output_processor = FileOutputProcessor([('V',None),('Vd',None),('g',None)], 'output.h5', sample_interval=1)
+fl_output_processor = FileOutputProcessor([('V',None),('Vd',None),('I',None)], 'output.h5', sample_interval=1)
 
 man.add(LPU, 'ring', dt, comp_dict, conns,
         device=args.gpu_dev, input_processors = [fl_input_processor],

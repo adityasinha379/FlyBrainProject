@@ -79,16 +79,16 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                               'tau': 10.
                               })
                 G.add_edge('in_' + str(in_port_idx), id)
+                in_port_idx += 1
                 synapse_name = id+'->ring_'+str(i)
                 G.add_node(synapse_name,
                                **{'class': 'Synapse',
                                   'name': synapse_name,
-                                  'weight': 1.                                 
+                                  'weight': 0.01                                 
                                   })
                 G.add_edge(id,synapse_name)
                 G.add_edge(synapse_name,
-                           'ring_' + str(in_port_idx))
-                in_port_idx += 1
+                           'ring_' + str(i))
 
             # Rota-> +1 clockwise, Rotb-> -1 anticlockwise
             elif t == 'rota':
@@ -109,8 +109,8 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                 G.add_edge('ring_'+str(i),id)
                 G.add_edge('driver_1',id)
 
-    # Defining Connectivities
-    # Ring Attractor Connections
+    # # Defining Connectivities
+    # # Ring Attractor Connections
     for i in range(N_ring):
         # Self Excitation
         synapse_name = 'Exc_r_'+str(i)+'->'+str(i)
