@@ -175,7 +175,7 @@ if __name__ == '__main__':
     parser.add_argument('--debug', default=False,
                         dest='debug', action='store_true',
                         help='Write connectivity structures and inter-LPU routed data in debug folder')
-    parser.add_argument('-l', '--log', default='both', type=str,
+    parser.add_argument('-l', '--log', default='none', type=str,
                         help='Log output to screen [file, screen, both, or none; default:none]')
     parser.add_argument('-s', '--steps', default=steps, type=int,
                         help='Number of steps [default: %s]' % steps)
@@ -213,7 +213,7 @@ if __name__ == '__main__':
     # with a sampling interval of 1 run step.
     fl_output_processor = FileOutputProcessor([('V', None)], 'new_output.h5', sample_interval=1)
 
-    man.add(LPU, 'ge', dt, comp_dict, conns,
+    man.add(LPU, 'lin', dt, comp_dict, conns,
             device=args.gpu_dev, input_processors = [fl_input_processor],
             output_processors = [fl_output_processor], debug=args.debug)
 

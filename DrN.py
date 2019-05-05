@@ -128,7 +128,7 @@ __global__ void update(int num_comps,
         resting_potential = g_resting_potential[i];
         // update according to equations of the model
         bh = exp%(fletter)s(-dt/(tau));
-        Vd = V*bh + (I+resting_potential)*(1.0 - bh);
+        Vd = Vd*bh + (I+resting_potential)*(1.0 - bh);
         // write local updated states back to global memory
         g_Vd[i] = Vd;
         g_internalV[i] = Vd;
@@ -175,7 +175,7 @@ if __name__ == '__main__':
     parser.add_argument('--debug', default=False,
                         dest='debug', action='store_true',
                         help='Write connectivity structures and inter-LPU routed data in debug folder')
-    parser.add_argument('-l', '--log', default='both', type=str,
+    parser.add_argument('-l', '--log', default='none', type=str,
                         help='Log output to screen [file, screen, both, or none; default:none]')
     parser.add_argument('-s', '--steps', default=steps, type=int,
                         help='Number of steps [default: %s]' % steps)
@@ -230,7 +230,7 @@ if __name__ == '__main__':
     t = np.arange(0, args.steps)*dt
 
     plt.figure()
-    plt.plot(t,list(f['V'].values())[0])
+    plt.plot(t,list(f['Vd'].values())[0])
     plt.xlabel('time, [s]')
     plt.ylabel('Voltage, [mV]')
     plt.title('Driver Neuron')
