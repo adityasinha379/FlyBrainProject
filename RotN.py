@@ -9,6 +9,8 @@ import pycuda.driver as cuda
 from pycuda.compiler import SourceModule
 
 from neurokernel.LPU.NDComponents.SynapseModels.BaseSynapseModel import BaseSynapseModel
+from neurokernel.LPU.NDComponents.AxonHillockModels.LIN import LIN
+from neurokernel.LPU.NDComponents.AxonHillockModels.DrN import DrN
 
 class RotN(BaseSynapseModel):
     accesses = ['V','Vd'] # LIN input and driver input
@@ -122,7 +124,7 @@ if __name__ == '__main__':
     import neurokernel.mpi_relaunch
 
     dt = 1e-4
-    dur = 1e-2
+    dur = 1.
     steps = int(dur / dt)
 
     parser = argparse.ArgumentParser()
@@ -155,9 +157,28 @@ if __name__ == '__main__':
                'weight': 1.
                })
 
+
+    G.add_node('ring0',
+               **{'class': 'LIN',
+                  'name': 'rings',
+                  'initV': 0.,
+                  'resting_potential': 0.0,
+                  'tau': 10.
+                  })
+    G.add_node('driver0',
+               **{'class': 'DrN',
+                  'name': 'drivers',
+                  'initV': 0.,
+                  'resting_potential': 0.0,
+                  'tau': 10.
+                  })
+
+    G.add_edge('ring0', 'synapse0')
+    G.add_edge('driver0', 'synapse0')
     comp_dict, conns = LPU.graph_to_dicts(G)
 
     fl_input_processor = FileInputProcessor('./test.h5')
+
     fl_output_processor = FileOutputProcessor(
         [('g', None)], 'new_output.h5', sample_interval=1)
 
@@ -168,3 +189,18 @@ if __name__ == '__main__':
     man.spawn()
     man.start(steps=args.steps)
     man.wait()
+
+    import h5py
+    import matplotlib
+    matplotlib.use('PS')
+    import matplotlib.pyplot as plt
+
+    f = h5py.File('new_output.h5')
+    t = np.arange(0, args.steps)*dt
+
+    plt.figure()
+    plt.plot(t,list(f['g'].values())[0])
+    plt.xlabel('time [s]')
+    plt.ylabel('Voltage [mV]')
+    plt.title('Rotational Neuron')
+    plt.savefig('rotn.png',dpi=300)
