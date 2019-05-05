@@ -11,7 +11,7 @@ from pycuda.compiler import SourceModule
 from neurokernel.LPU.NDComponents.SynapseModels.BaseSynapseModel import BaseSynapseModel
 
 class RotN(BaseSynapseModel):
-    accesses = ['V1','V2']
+    accesses = ['V','Vd'] # LIN input and driver input
     updates = ['g'] # conductance (mS/cm^2)
     params = ['weight']
 
@@ -69,23 +69,23 @@ class RotN(BaseSynapseModel):
             # this is a kernel that runs 1 step internally for each self.dt
         template = """
 __global__ void update(int num_comps, %(dt)s dt, int steps,
-                       %(V1)s* g_V1, %(V2)s* g_V2,
+                       %(V)s* g_V, %(Vd)s* g_Vd,
                        %(weight)s* g_weight, %(g)s* g_g)
 {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     int total_threads = gridDim.x * blockDim.x;
 
+    %(V)s V;
     %(V1)s V1;
-    %(V2)s V2;
     %(weight)s weight;
 
     for(int i = tid; i < num_comps; i += total_threads)
     {
-        V1 = g_V1[i];
-        V2 = g_V2[i];
+        V = g_V[i];
+        Vd = g_Vd[i];
         weight = g_weight[i];
 
-        g_g[i] = V1*V2*weight;
+        g_g[i] = V*Vd*weight;
     }
 }
 """
