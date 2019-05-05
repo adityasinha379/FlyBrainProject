@@ -1,13 +1,5 @@
 #!/usr/bin/env python
 
-"""
-Visualize generic LPU demo output.
-Notes
------
-Generate demo output by running
-python generic_demo.py
-"""
-
 import numpy as np
 import matplotlib as mpl
 mpl.use('agg')

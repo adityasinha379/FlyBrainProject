@@ -10,7 +10,6 @@ import neurokernel.core_gpu as core
 
 from neurokernel.LPU.LPU import LPU
 
-from neurokernel.LPU.InputProcessors.StepInputProcessor import StepInputProcessor
 from neurokernel.LPU.InputProcessors.FileInputProcessor import FileInputProcessor
 from neurokernel.LPU.OutputProcessors.FileOutputProcessor import FileOutputProcessor
 
@@ -47,7 +46,7 @@ man = core.Manager()
 fl_input_processor = FileInputProcessor('./input.h5')
 fl_output_processor = FileOutputProcessor([('V',None)], 'output.h5', sample_interval=1)
 
-man.add(LPU, 'ge', dt, comp_dict, conns,
+man.add(LPU, 'ring', dt, comp_dict, conns,
         device=args.gpu_dev, input_processors = [fl_input_processor],
         output_processors = [fl_output_processor], debug=args.debug)
 
