@@ -231,7 +231,7 @@ if __name__ == '__main__':
 
     plt.figure()
     plt.plot(t,list(f['V'].values())[0])
-    plt.xlabel('time, [s]')
-    plt.ylabel('Voltage, [mV]')
+    plt.xlabel('time [s]')
+    plt.ylabel('Voltage [mV]')
     plt.title('Leaky Integrate Neuron')
     plt.savefig('lin.png',dpi=300)

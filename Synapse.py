@@ -165,3 +165,18 @@ if __name__ == '__main__':
     man.spawn()
     man.start(steps=args.steps)
     man.wait()
+
+    import h5py
+    import matplotlib
+    matplotlib.use('PS')
+    import matplotlib.pyplot as plt
+
+    f = h5py.File('new_output.h5')
+    t = np.arange(0, args.steps)*dt
+
+    plt.figure()
+    plt.plot(t,list(f['g'].values())[0])
+    plt.xlabel('time [s]')
+    plt.ylabel('Conductance [mS/cm^2]')
+    plt.title('Weighted Synapse')
+    plt.savefig('syn.png',dpi=300)
