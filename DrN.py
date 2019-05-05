@@ -9,8 +9,8 @@ from pycuda.compiler import SourceModule
 
 from neurokernel.LPU.NDComponents.AxonHillockModels.BaseAxonHillockModel import BaseAxonHillockModel
 
-class LIN(BaseAxonHillockModel):
-    updates = ['V' # Membrane Potential (mV)
+class DrN(BaseAxonHillockModel):
+    updates = ['Vd' # Membrane Potential (mV)
               ]
     accesses = ['I'] # (\mu A/cm^2 )
     # params are the parameters of the model that needs to be defined
@@ -62,7 +62,7 @@ class LIN(BaseAxonHillockModel):
         # if 'initV' is specified in the parameter dict,
         # it will be used as initial value
         if 'initV' in self.params_dict:
-            cuda.memcpy_dtod(int(update_pointers['V']),
+            cuda.memcpy_dtod(int(update_pointers['Vd']),
                              self.params_dict['initV'].gpudata,
                              self.params_dict['initV'].nbytes)
             cuda.memcpy_dtod(self.internal_states['internalV'].gpudata,
@@ -70,7 +70,7 @@ class LIN(BaseAxonHillockModel):
                              self.params_dict['initV'].nbytes)
         else:
             # use resting potential as initial value
-            cuda.memcpy_dtod(int(update_pointers['V']),
+            cuda.memcpy_dtod(int(update_pointers['Vd']),
                              self.params_dict['resting_potential'].gpudata,
                              self.params_dict['resting_potential'].nbytes)
             cuda.memcpy_dtod(self.internal_states['internalV'].gpudata,
@@ -108,12 +108,12 @@ __global__ void update(int num_comps,
                %(resting_potential)s* g_resting_potential, // params
                %(tau)s* g_tau,
                %(internalV)s* g_internalV, // internals
-               %(V)s* g_V)
+               %(Vd)s* g_Vd)
 {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     int total_threads = gridDim.x * blockDim.x;
     // instantiate variables
-    %(V)s V;
+    %(Vd)s Vd;
     %(I)s I;
     %(resting_potential)s resting_potential;
     %(tau)s tau;
@@ -122,16 +122,16 @@ __global__ void update(int num_comps,
     for(int i = tid; i < num_comps; i += total_threads)
     {
         // load the data from global memory
-        V = g_internalV[i];
+        Vd = g_internalV[i];
         I = g_I[i];
         tau = g_tau[i];
         resting_potential = g_resting_potential[i];
         // update according to equations of the model
         bh = exp%(fletter)s(-dt/(tau));
-        V = V*bh + (I+resting_potential)*(1.0 - bh);
+        Vd = V*bh + (I+resting_potential)*(1.0 - bh);
         // write local updated states back to global memory
-        g_V[i] = V;
-        g_internalV[i] = V;
+        g_Vd[i] = Vd;
+        g_internalV[i] = Vd;
     }
 }
         """
@@ -197,8 +197,8 @@ if __name__ == '__main__':
 
     # specify the node
     G.add_node('neuron0', **{
-               'class': 'LIN',
-               'name': 'LIN',
+               'class': 'DrN',
+               'name': 'DrN',
                'initV': np.random.uniform(-60.0, -25.0),
                'resting_potential': -70.0,
                'tau': 10., # in mS
@@ -211,9 +211,9 @@ if __name__ == '__main__':
     fl_input_processor = StepInputProcessor('I', ['neuron0'], 10.0, 0.2, 0.8)
     # output processor to record 'spike_state' and 'V' to hdf5 file 'new_output.h5',
     # with a sampling interval of 1 run step.
-    fl_output_processor = FileOutputProcessor([('V', None)], 'new_output.h5', sample_interval=1)
+    fl_output_processor = FileOutputProcessor([('Vd', None)], 'new_output.h5', sample_interval=1)
 
-    man.add(LPU, 'ge', dt, comp_dict, conns,
+    man.add(LPU, 'drn', dt, comp_dict, conns,
             device=args.gpu_dev, input_processors = [fl_input_processor],
             output_processors = [fl_output_processor], debug=args.debug)
 
@@ -233,5 +233,5 @@ if __name__ == '__main__':
     plt.plot(t,list(f['V'].values())[0])
     plt.xlabel('time, [s]')
     plt.ylabel('Voltage, [mV]')
-    plt.title('Leaky Integrate Neuron')
-    plt.savefig('lin.png',dpi=300)
+    plt.title('Driver Neuron')
+    plt.savefig('drn.png',dpi=300)
