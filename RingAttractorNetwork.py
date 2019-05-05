@@ -35,7 +35,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                 G.add_node(id,
                            **{'class': 'DrN',
                               'name': id + '_s',
-                              'initV': np.random.uniform(-60.0, -25.0),
+                              'initV': 0.0,
                               'resting_potential': 0.0,
                               'tau': 0.1     # in ms
                               })
@@ -48,7 +48,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                 G.add_node(id,
                            **{'class': 'LIN',
                               'name': id + '_s',
-                              'initV': np.random.uniform(-60.0, -25.0),
+                              'initV': 0.,
                               'resting_potential': 0.0,
                               'tau': 1.
                               })
@@ -74,7 +74,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                 G.add_node(id,
                            **{'class': 'LIN',
                               'name': id + '_s',
-                              'initV': np.random.uniform(-60.0, -25.0),
+                              'initV': 0.,
                               'resting_potential': 0.0,
                               'tau': 10.
                               })
@@ -83,7 +83,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                 G.add_node(synapse_name,
                                **{'class': 'Synapse',
                                   'name': synapse_name,
-                                  'weight': 0.01                                  
+                                  'weight': 1.                                 
                                   })
                 G.add_edge(id,synapse_name)
                 G.add_edge(synapse_name,

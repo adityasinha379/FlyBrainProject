@@ -63,6 +63,7 @@ def process_input(angular_velocity = 1000):
     sum_out, lob_out = lobulla(med_out)   # sum_out for posititional features (landmarks), lob_out for AVDU inputs (motion)
     avdu_out = AVDU(sum_out,lob_out,tau,dt)
     
+    avdu_out = np.maximum(avdu_out,np.zeros_like(avdu_out))
     pos_out = np.zeros((16,len(t)))
     for i in range(0,l,l//16):
         pos_out[int(i/l*16),:] = np.sum(input[i:i+l//16,:],axis=0)
