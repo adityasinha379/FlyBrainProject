@@ -33,7 +33,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                                   })
 
                 G.add_node(id,
-                           **{'class': 'LIN',
+                           **{'class': 'DrN',
                               'name': id + '_s',
                               'initV': np.random.uniform(-60.0, -25.0),
                               'resting_potential': 0.0,
