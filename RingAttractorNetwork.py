@@ -10,8 +10,8 @@ import networkx as nx
 
 def create_lpu_graph(lpu_name, N_driver, N_ring):
     # Set numbers of neurons:
-    neu_type = ('ring', 'pos', 'rota', 'rotb', 'driver')
-    neu_num = (N_ring, N_ring, N_ring, N_ring, N_driver)
+    neu_type = ('driver', 'ring', 'pos', 'rota', 'rotb')
+    neu_num = (N_driver, N_ring, N_ring, N_ring, N_ring)
 
     # Neuron ids are between 0 and the total number of neurons:
     G = nx.MultiDiGraph()
@@ -45,13 +45,22 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
             # Ring attractor neurons are all attached to output
             # ports (which are represented as separate nodes):
             elif t == 'ring':
-                G.add_node(id,
-                           **{'class': 'LIN',
-                              'name': id + '_s',
-                              'initV': 0.,
-                              'resting_potential': 0.0,
-                              'tau': 1.
-                              })
+                if(gpot_out_id == 1):
+                    G.add_node(id,
+                               **{'class': 'LIN',
+                                  'name': id + '_s',
+                                  'initV': 1.,
+                                  'resting_potential': 0.0,
+                                  'tau': 1.
+                                  })
+                else:
+                    G.add_node(id,
+                               **{'class': 'LIN',
+                                  'name': id + '_s',
+                                  'initV': 0.,
+                                  'resting_potential': 0.0,
+                                  'tau': 1.
+                                  })
 
                 G.add_node('out_'+str(gpot_out_id),
                            **{'class': 'Port',
@@ -84,7 +93,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                 G.add_node(synapse_name,
                                **{'class': 'Synapse',
                                   'name': synapse_name,
-                                  'weight': 0.01                                 
+                                  'weight': 0.0                                 
                                   })
                 G.add_edge(id,synapse_name)
                 G.add_edge(synapse_name,
@@ -95,7 +104,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                 G.add_node(id,
                            **{'class': 'RotN',
                               'name': id + '_s',
-                              'weight': 1.
+                              'weight': 0.1
                               })
                 G.add_edge('ring_'+str(i),id)
                 G.add_edge('driver_0',id)               
@@ -104,7 +113,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                 G.add_node(id,
                            **{'class': 'RotN',
                               'name': id + '_s',
-                              'weight': 1.
+                              'weight': 0.1
                               })
                 G.add_edge('ring_'+str(i),id)
                 G.add_edge('driver_1',id)
@@ -139,6 +148,15 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                        **{'class': 'Synapse',
                           'name': synapse_name,
                           'weight': 0.35 if abs(j-i) is 1 else 0.225
+                          })
+                G.add_edge('ring_'+str(j),synapse_name)
+                G.add_edge(synapse_name,'ring_'+str(i))
+            if abs(j-i)>13:
+                synapse_name = 'Exc_r_'+str(j)+'->'+str(i)
+                G.add_node(synapse_name,
+                       **{'class': 'Synapse',
+                          'name': synapse_name,
+                          'weight': 0.35 if abs(j-i) is 15 else 0.225
                           })
                 G.add_edge('ring_'+str(j),synapse_name)
                 G.add_edge(synapse_name,'ring_'+str(i))

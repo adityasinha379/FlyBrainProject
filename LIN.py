@@ -130,6 +130,7 @@ __global__ void update(int num_comps,
         bh = exp%(fletter)s(-dt/(tau));
         V = V*bh + (I+resting_potential)*(1.0 - bh);
         // write local updated states back to global memory
+        if(V<0) V=0;
         g_V[i] = V;
         g_internalV[i] = V;
     }
