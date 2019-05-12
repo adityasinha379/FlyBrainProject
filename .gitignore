@@ -3,3 +3,4 @@
 __pycache__/
 Results/*.h5
 output.h5
+./*.gexf

@@ -45,7 +45,7 @@ def AVDU(sum_out,lob_out,tau,dt):  # sum_out: (4,t), lob_out: (1,t)
     
     return avdu_out
 
-def process_input(angular_velocity = 1000):
+def process_input(angular_velocity = 800):
     l = 48
     b = 32
     dt = 0.1
