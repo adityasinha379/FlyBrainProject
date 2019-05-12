@@ -1,7 +1,0 @@
-Ring Neuron Time constant, tau_t = 1ms
-RF receptive fiels with wp = 0.1 for only position
-			   = 0.01 when both positional and motion
-dt = 0.1ms
-T = 120s
-
-

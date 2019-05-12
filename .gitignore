@@ -1,3 +1,5 @@
 .ipynb_checkpoints/
 
 __pycache__/
+Results/*.h5
+./*.h5

@@ -37,7 +37,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                               'name': id + '_s',
                               'initV': 0.0,
                               'resting_potential': 0.0,
-                              'tau': 0.1     # in ms
+                              'tau': 10.
                               })
                 G.add_edge('in_' + str(in_port_idx), id)
                 in_port_idx += 1
@@ -45,22 +45,13 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
             # Ring attractor neurons are all attached to output
             # ports (which are represented as separate nodes):
             elif t == 'ring':
-                if(gpot_out_id == 1):
-                    G.add_node(id,
-                               **{'class': 'LIN',
-                                  'name': id + '_s',
-                                  'initV': 1.,
-                                  'resting_potential': 0.0,
-                                  'tau': 1.
-                                  })
-                else:
-                    G.add_node(id,
-                               **{'class': 'LIN',
-                                  'name': id + '_s',
-                                  'initV': 0.,
-                                  'resting_potential': 0.0,
-                                  'tau': 1.
-                                  })
+                G.add_node(id,
+                           **{'class': 'LIN',
+                              'name': id + '_s',
+                              'initV': 0.,
+                              'resting_potential': 0.0,
+                              'tau': 6.2
+                              })
 
                 G.add_node('out_'+str(gpot_out_id),
                            **{'class': 'Port',
@@ -93,7 +84,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                 G.add_node(synapse_name,
                                **{'class': 'Synapse',
                                   'name': synapse_name,
-                                  'weight': 0.0                                 
+                                  'weight': 0.01
                                   })
                 G.add_edge(id,synapse_name)
                 G.add_edge(synapse_name,
@@ -122,11 +113,12 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
     # # Ring Attractor Connections
     for i in range(N_ring):
         # Self Excitation
+        fac = 0.9667
         synapse_name = 'Exc_r_'+str(i)+'->'+str(i)
         G.add_node(synapse_name,
                        **{'class': 'Synapse',
                           'name': synapse_name,
-                          'weight': 0.6
+                          'weight': 0.6*fac
                           })
         G.add_edge('ring_'+str(i),synapse_name)
         G.add_edge(synapse_name,'ring_'+str(i))           
@@ -147,7 +139,7 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                 G.add_node(synapse_name,
                        **{'class': 'Synapse',
                           'name': synapse_name,
-                          'weight': 0.35 if abs(j-i) is 1 else 0.225
+                          'weight': 0.35*fac if abs(j-i) is 1 else 0.225*fac
                           })
                 G.add_edge('ring_'+str(j),synapse_name)
                 G.add_edge(synapse_name,'ring_'+str(i))
@@ -156,16 +148,16 @@ def create_lpu_graph(lpu_name, N_driver, N_ring):
                 G.add_node(synapse_name,
                        **{'class': 'Synapse',
                           'name': synapse_name,
-                          'weight': 0.35 if abs(j-i) is 15 else 0.225
+                          'weight': 0.35*fac if abs(j-i) is 15 else 0.225*fac
                           })
                 G.add_edge('ring_'+str(j),synapse_name)
                 G.add_edge(synapse_name,'ring_'+str(i))
 
         # Rota to Ring
-        G.add_edge('rota_'+str(i),'ring_'+str((i+1)%N_ring))
+        G.add_edge('rota_'+str(i),'ring_'+str((i-1)%N_ring))
 
         # Rotb to Ring
-        G.add_edge('rotb_'+str(i),'ring_'+str((i-1)%N_ring))
+        G.add_edge('rotb_'+str(i),'ring_'+str((i+1)%N_ring))
 
     return G
 
