@@ -2,4 +2,4 @@
 
 __pycache__/
 Results/*.h5
-./*.h5
+output.h5
